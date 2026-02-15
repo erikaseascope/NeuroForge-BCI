@@ -1,11 +1,10 @@
 # Contributing to NeuroForge
 
-Thank you for wanting to help build the future of BCI!
+Thanks for your interest!
 
-1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/amazing-thing`)
-3. Make your changes
-4. Ensure all tests pass
-5. Submit a PR
+1. Fork the repo (if you're external)
+2. Create a branch for your change
+3. Make your edits
+4. Open a pull request
 
-**All contributors must agree to the Safety Covenant** (see SECURITY.md).
+All contributions must respect the strict safety rules in SECURITY.md.
