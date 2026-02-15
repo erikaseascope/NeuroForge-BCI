@@ -5,6 +5,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from .state import GraphState
 from ..agents.decoding import create_decoding_agent
 from ..agents.biocompatibility import create_biocompatibility_agent
+from ..agents.signal_processing import create_signal_processing_agent
 from ..security.dasr import enforce_dasr, DASRError
 from ..security.audit import log_audit
 
@@ -13,6 +14,7 @@ from langchain_core.language_models import BaseLanguageModel
 dummy_llm = None  # type: ignore  # Will be injected
 
 decoding_agent = create_decoding_agent(dummy_llm)
+signal_processing_agent = create_signal_processing_agent(dummy_llm)  # same dummy LLM placeholder
 
 def decoding_node(state: GraphState) -> Dict[str, Any]:
     """Run the Decoding Cluster agent"""
@@ -84,6 +86,40 @@ def biocompatibility_node(state: GraphState) -> Dict[str, Any]:
         "metrics": state["metrics"] | {"stability_score": 0.90}  # placeholder
     }
 
+def signal_processing_node(state: GraphState) -> Dict[str, Any]:
+    """Run the Signal Processing Cluster agent"""
+    try:
+        enforce_dasr(state)
+    except DASRError as e:
+        log_audit(f"Signal Processing blocked: {str(e)}")
+        return {
+            "safety_flags": state["safety_flags"] + [str(e)],
+            "requires_hitl": True,
+            "audit_entries": state["audit_entries"] + [{"action": "signal_processing_blocked"}]
+        }
+
+    log_audit("Signal Processing agent invoked")
+    
+    agent_input = {
+        "goal": state["goal"],
+        "current_design": state.get("current_design", {}),
+        "safety_flags": state["safety_flags"],
+    }
+    
+    try:
+        output = signal_processing_agent.invoke(agent_input)
+    except Exception as e:
+        log_audit(f"Signal Processing error: {str(e)}")
+        output = f"Agent failed: {str(e)}"
+    
+    return {
+        "messages": state["messages"] + [f"Signal Processing proposal: {output}"],
+        "iteration": state["iteration"] + 1,
+        "current_design": state.get("current_design", {}) | {"signal_processing_update": "improved_noise_rejection"},
+        "audit_entries": state["audit_entries"] + [{"action": "signal_processing_ran"}],
+        "metrics": state["metrics"] | {"input_noise_uvrms": 4.2, "snr_db": 28.5}  # placeholder metrics
+    }
+
 def safety_guard_node(state: GraphState) -> Dict[str, Any]:
     """Security envelope check"""
     log_audit("Running safety guard")
@@ -126,11 +162,13 @@ def build_neuroforge_graph():
     workflow.add_node("safety_guard", safety_guard_node)
     workflow.add_node("decoding_agent", decoding_node)
     workflow.add_node("biocompatibility_agent", biocompatibility_node)
+    workflow.add_node("signal_processing_agent", signal_processing_node)
     workflow.add_node("governor", governor_node)
 
-        workflow.add_edge(START, "safety_guard")
-    workflow.add_edge("safety_guard", "decoding_agent")
-    workflow.add_edge("decoding_agent", "biocompatibility_agent")  # new
+    workflow.add_edge(START, "safety_guard")
+    workflow.add_edge("safety_guard", "signal_processing_agent")      # ← new: clean signal first
+    workflow.add_edge("signal_processing_agent", "decoding_agent")
+    workflow.add_edge("decoding_agent", "biocompatibility_agent")
     workflow.add_edge("biocompatibility_agent", "governor")
     
     # Keep existing conditional from governor or adjust route_after_agent to point to biocompatibility if needed
