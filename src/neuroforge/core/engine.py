@@ -1,6 +1,10 @@
 from typing import Dict, Any, Literal
 from langgraph.graph import StateGraph, END, START
 from langgraph.checkpoint.memory import MemorySaver
+from ..utils.llm import get_llm
+llm = get_llm()
+decoding_agent = create_decoding_agent(llm)
+# ... same for other agents
 
 from .state import GraphState
 from ..agents.decoding import create_decoding_agent
