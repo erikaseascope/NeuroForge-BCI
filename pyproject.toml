@@ -1,1 +1,28 @@
-pyproject.toml
+[project]
+name = "neuroforge"
+version = "0.1.0"
+description = "Recursive AI swarm for safe BCI engineering"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Your Name", email = "your@email.com"},
+]
+
+dependencies = [
+    "langgraph >= 0.2.0",
+    "crewai >= 0.30.0",          # or latest stable
+    "langchain >= 0.2.0",
+    "langchain-community",
+    "streamlit >= 1.30.0",
+    "python-dotenv",
+    "pydantic >= 2.0",
+    "pyyaml",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/neuroforge"]
