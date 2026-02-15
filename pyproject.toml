@@ -15,6 +15,7 @@ dependencies = [
     "crewai >= 1.9.0",
     "langchain-core >= 1.2.0",
     "langchain >= 1.2.0",               # for prompts, chains, etc.
+    "langchain-xai >= 0.1.0",  # Grok integration
     "streamlit >= 1.54.0",
     "python-dotenv >= 1.0.0",
     "pydantic >= 2.5.0",
