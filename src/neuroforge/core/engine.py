@@ -106,9 +106,24 @@ def build_neuroforge_graph():
     
     workflow.add_edge("governor", "safety_guard")  # continue loop unless killed
 
-    # Placeholder HITL node (expand later)
-    def hitl_gate_node(state):
-        return {"messages": state["messages"] + ["Paused for HITL review"]}
+       # Improved HITL simulation node
+    def hitl_gate_node(state: GraphState) -> Dict[str, Any]:
+        log_audit("HITL gate reached - simulation mode")
+        # In real UI: show state and wait for button click
+        # Here: auto-approve for demo, or force pause
+        simulated_approval = True  # Change to False to test rejection flow
+        if simulated_approval:
+            return {
+                "hitl_approved": True,
+                "requires_hitl": False,
+                "messages": state["messages"] + ["HITL (simulated): Approved continuation"],
+                "audit_entries": state["audit_entries"] + [{"action": "hitl_approved"}]
+            }
+        else:
+            return {
+                "messages": state["messages"] + ["HITL (simulated): Rejected - stopping"],
+                "audit_entries": state["audit_entries"] + [{"action": "hitl_rejected"}]
+            }
 
     workflow.add_node("hitl_gate", hitl_gate_node)
     workflow.add_edge("hitl_gate", END)
