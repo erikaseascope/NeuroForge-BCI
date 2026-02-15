@@ -4,6 +4,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 from .state import GraphState
 from ..agents.decoding import create_decoding_agent
+from ..agents.biocompatibility import create_biocompatibility_agent
 from ..security.dasr import enforce_dasr, DASRError
 from ..security.audit import log_audit
 
@@ -47,6 +48,42 @@ def decoding_node(state: GraphState) -> Dict[str, Any]:
         "audit_entries": state["audit_entries"] + [{"action": "decoding_ran"}]
     }
 
+biocompatibility_agent = create_biocompatibility_agent(dummy_llm)  # same dummy LLM placeholder
+
+def biocompatibility_node(state: GraphState) -> Dict[str, Any]:
+    """Run the Biocompatibility Cluster agent"""
+    try:
+        enforce_dasr(state)
+    except DASRError as e:
+        log_audit(f"Biocompatibility blocked: {str(e)}")
+        return {
+            "safety_flags": state["safety_flags"] + [str(e)],
+            "requires_hitl": True,
+            "audit_entries": state["audit_entries"] + [{"action": "biocompatibility_blocked"}]
+        }
+
+    log_audit("Biocompatibility agent invoked")
+    
+    agent_input = {
+        "goal": state["goal"],
+        "current_design": state.get("current_design", {}),
+        "safety_flags": state["safety_flags"],
+    }
+    
+    try:
+        output = biocompatibility_agent.invoke(agent_input)
+    except Exception as e:
+        log_audit(f"Biocompatibility error: {str(e)}")
+        output = f"Agent failed: {str(e)}"
+    
+    return {
+        "messages": state["messages"] + [f"Biocompatibility proposal: {output}"],
+        "iteration": state["iteration"] + 1,  # or keep same if parallel
+        "current_design": state.get("current_design", {}) | {"biocompatibility_update": "improved_stability"},
+        "audit_entries": state["audit_entries"] + [{"action": "biocompatibility_ran"}],
+        "metrics": state["metrics"] | {"stability_score": 0.90}  # placeholder
+    }
+
 def safety_guard_node(state: GraphState) -> Dict[str, Any]:
     """Security envelope check"""
     log_audit("Running safety guard")
@@ -88,13 +125,15 @@ def build_neuroforge_graph():
 
     workflow.add_node("safety_guard", safety_guard_node)
     workflow.add_node("decoding_agent", decoding_node)
+    workflow.add_node("biocompatibility_agent", biocompatibility_node)
     workflow.add_node("governor", governor_node)
 
-    workflow.add_edge(START, "safety_guard")
+        workflow.add_edge(START, "safety_guard")
     workflow.add_edge("safety_guard", "decoding_agent")
+    workflow.add_edge("decoding_agent", "biocompatibility_agent")  # new
+    workflow.add_edge("biocompatibility_agent", "governor")
     
-    workflow.add_conditional_edges(
-        "decoding_agent",
+    # Keep existing conditional from governor or adjust route_after_agent to point to biocompatibility if needed
         route_after_agent,
         {
             "safety_guard": "safety_guard",  # loop
