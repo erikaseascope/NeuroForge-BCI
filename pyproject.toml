@@ -29,8 +29,8 @@ tools = [
     "crewai-tools >= 1.9.0",
 ]
 dev = [
-    "ruff >= 0.5.0",
     "pytest >= 8.0.0",
+"pytest-cov >= 5.0.0",  # if you want coverage
 ]
 
 [build-system]
