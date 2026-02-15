@@ -6,24 +6,22 @@ The first open-source autonomous engineering framework that designs, simulates, 
 
 ## ✨ Core Features
 - 7 specialized BCI agent clusters (Neuralink-inspired)
-- Full recursive iteration loops with LangGraph
+- Full recursive iteration loops
 - Mandatory HITL (Human-in-the-Loop) gates on every high-risk action
 - Private encrypted shards — never touches raw neural data
-- Blockchain-anchored audit trails
-- Synthetic-only simulation engine (Brian2 + NEURON + PyBullet)
-- Beautiful Streamlit dashboard + real-time metrics
-- Built-in FDA/EU MDR regulatory export templates
+- Audit trails with cryptographic signing
+- Synthetic-only simulation
+- Streamlit dashboard + real-time metrics
+- Built-in regulatory alignment notes
 
-## 🚀 Quick Start
+## Safety First
+This is **research & simulation only**. No real patient data. Ever.  
+See [SECURITY.md](SECURITY.md) for full protocol.
 
-```bash
-# 1. Clone
-git clone https://github.com/YOURUSERNAME/neuroforge.git
-cd neuroforge
+## Quick Start (once code is added)
+1. Clone or fork the repo
+2. Install dependencies
+3. Run the dashboard
 
-# 2. Install
-uv sync          # recommended (or pip install -e .)
-cp .env.example .env
-
-# 3. Run the dashboard
-streamlit run src/neuroforge/ui/dashboard.py
+## License
+Apache License 2.0 — friendly for research and commercial use.
