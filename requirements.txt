@@ -1,25 +1,22 @@
-# Core agent frameworks (latest stable as of early 2026)
-langgraph>=0.2.0,<1.0.0          # safe range; avoid breaking changes in 1.0+
-crewai>=0.86.0                   # recent stable with good compatibility
-langchain-core>=0.3.0
-langchain>=0.3.0
-langchain-xai>=0.1.0             # assuming this is your xAI integration
+# Core agent frameworks (stable ranges for Python 3.10–3.12)
+langgraph>=0.2.0,<0.3.0
+crewai>=0.86.0,<0.87.0
+langchain-core>=0.3.0,<0.4.0
+langchain>=0.3.0,<0.4.0
+langchain-xai>=0.1.0
 
 # UI & helpers
-streamlit>=1.41.0                # 1.54 was never released; latest is ~1.41–1.42
+streamlit>=1.41.0,<1.42.0
 python-dotenv>=1.0.1
-pydantic>=2.9.0,<3.0.0           # 2.5 → 2.9 safe range
+pydantic>=2.9.0,<3.0.0
 pyyaml>=6.0.2
 tqdm>=4.66.5
 
-# Backend / API / WebSocket stack (for Render)
+# Backend / API / WebSocket stack (production-ready)
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 gunicorn>=22.0.0
 httpx>=0.27.0
 sqlalchemy>=2.0.0
-psycopg2-binary>=2.9.9           # if using Render Postgres
-python-jose[cryptography]>=3.3.0 # for JWT/OAuth
-
-# Dev/testing helpers (optional, comment out for production)
-# crewai-tools>=0.14.0           # if you need extra tools
+psycopg2-binary>=2.9.9
+python-jose[cryptography]>=3.3.0
